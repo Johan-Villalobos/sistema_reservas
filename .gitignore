@@ -1,0 +1,13 @@
+db.sqlite3
+*.sqlite3
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.env
+staticfiles/
+media/
+.coverage
+htmlcov/
+.idea/
+.vscode/

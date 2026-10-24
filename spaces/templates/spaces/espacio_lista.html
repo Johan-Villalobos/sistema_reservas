@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Espacios · Gestión de Reservas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Espacios académicos</h1>
+  {% if puede_administrar %}
+    <a class="btn btn-primary" href="{% url 'spaces:espacio_crear' %}">Crear espacio</a>
+  {% endif %}
+</div>
+
+<form method="get" class="row g-2 align-items-end mb-4">
+  <div class="col-sm-4">
+    <label class="form-label" for="filtro-tipo">Filtrar por tipo</label>
+    <select class="form-select" id="filtro-tipo" name="tipo">
+      <option value="">Todos los tipos</option>
+      {% for valor, etiqueta in tipos %}
+        <option value="{{ valor }}" {% if valor == tipo_seleccionado %}selected{% endif %}>
+          {{ etiqueta }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-outline-secondary">Filtrar</button>
+  </div>
+</form>
+
+{% if tipo_invalido %}
+  <div class="alert alert-warning" role="alert">
+    El tipo de espacio solicitado no es válido; se muestra el catálogo completo.
+  </div>
+{% endif %}
+
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col">Tipo</th>
+        <th scope="col">Capacidad</th>
+        <th scope="col">Ubicación</th>
+        <th scope="col">Estado</th>
+        {% if puede_administrar %}
+          <th scope="col"><span class="visually-hidden">Acciones</span></th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for espacio in espacios %}
+        <tr>
+          <td>
+            <a href="{% url 'spaces:espacio_detalle' espacio.pk %}">{{ espacio.nombre }}</a>
+          </td>
+          <td>{{ espacio.get_tipo_display }}</td>
+          <td>{{ espacio.capacidad }}</td>
+          <td>{{ espacio.ubicacion }}</td>
+          <td>
+            {% if espacio.activo %}
+              <span class="badge bg-success">Activo</span>
+            {% else %}
+              <span class="badge bg-secondary">Inactivo</span>
+            {% endif %}
+          </td>
+          {% if puede_administrar %}
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'spaces:espacio_editar' espacio.pk %}">
+                Editar
+              </a>
+              {% if espacio.activo %}
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'spaces:espacio_detalle' espacio.pk %}#desactivar">
+                  Desactivar
+                </a>
+              {% endif %}
+            </td>
+          {% endif %}
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="{% if puede_administrar %}6{% else %}5{% endif %}" class="text-center">
+            No hay espacios para mostrar.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitud de reserva · Gestión de Reservas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ solicitud.espacio.nombre }}</h1>
+    <p class="mb-0">
+      <span class="badge bg-primary">{{ solicitud.get_estado_display }}</span>
+    </p>
+  </div>
+</div>
+
+<dl class="row">
+  <dt class="col-sm-3">Espacio</dt>
+  <dd class="col-sm-9">{{ solicitud.espacio.nombre }}</dd>
+
+  <dt class="col-sm-3">Solicitante</dt>
+  <dd class="col-sm-9">
+    {{ solicitud.solicitante.get_full_name|default:solicitud.solicitante.username }}
+  </dd>
+
+  <dt class="col-sm-3">Fecha</dt>
+  <dd class="col-sm-9">{{ solicitud.fecha|date:"d/m/Y" }}</dd>
+
+  <dt class="col-sm-3">Franja horaria</dt>
+  <dd class="col-sm-9">
+    {{ solicitud.hora_inicio|time:"H:i" }} - {{ solicitud.hora_fin|time:"H:i" }}
+  </dd>
+
+  <dt class="col-sm-3">Motivo</dt>
+  <dd class="col-sm-9">{{ solicitud.motivo }}</dd>
+
+  <dt class="col-sm-3">Estado</dt>
+  <dd class="col-sm-9">{{ solicitud.get_estado_display }}</dd>
+
+  <dt class="col-sm-3">Fecha de creación</dt>
+  <dd class="col-sm-9">{{ solicitud.creado_en|date:"d/m/Y H:i" }}</dd>
+</dl>
+
+<p class="mt-4 mb-0">
+  <a href="{% url 'reservations:solicitud_lista' %}">
+    Volver al listado de solicitudes
+  </a>
+</p>
+{% endblock %}

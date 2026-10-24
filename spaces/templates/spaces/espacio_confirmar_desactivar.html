@@ -1,0 +1,20 @@
+{% comment %}
+Confirmación previa a la desactivación lógica. Se incluye desde el detalle del
+espacio para no exponer una ruta GET de borrado y mantener la acción solo POST.
+{% endcomment %}
+<div class="card border-danger">
+  <div class="card-body">
+    <h2 class="h5 card-title">Desactivar «{{ espacio.nombre }}»</h2>
+    <p class="card-text">
+      El espacio dejará de estar disponible en el catálogo y no podrá reservarse.
+      El registro se conserva para el historial y no se elimina.
+    </p>
+    <form method="post" action="{% url 'spaces:espacio_desactivar' espacio.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Sí, desactivar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'spaces:espacio_detalle' espacio.pk %}">
+        Cancelar
+      </a>
+    </form>
+  </div>
+</div>

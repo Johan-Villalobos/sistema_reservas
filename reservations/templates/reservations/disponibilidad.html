@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Disponibilidad · Gestión de Reservas{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Consulta de disponibilidad</h1>
+<p class="text-muted">
+  Solo se listan las franjas ocupadas por reservas aprobadas.
+</p>
+
+<form method="get" class="row g-3 align-items-end mb-4">
+  {% for field in form %}
+    <div class="col-md-5">
+      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}
+        <div class="text-danger small">{{ field.errors|striptags }}</div>
+      {% endif %}
+    </div>
+  {% endfor %}
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-primary w-100">Consultar</button>
+  </div>
+</form>
+
+{% if consultado %}
+  {% if franjas %}
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th scope="col">Hora de inicio</th>
+            <th scope="col">Hora de fin</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for franja in franjas %}
+            <tr>
+              <td>{{ franja.hora_inicio|time:"H:i" }}</td>
+              <td>{{ franja.hora_fin|time:"H:i" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-success" role="status">
+      No hay franjas ocupadas para el espacio y la fecha seleccionados.
+    </div>
+  {% endif %}
+{% endif %}
+
+<div class="mt-4">
+  <a href="{% url 'reservations:solicitud_lista' %}">
+    Volver al listado de reservas
+  </a>
+  <span class="mx-2">·</span>
+  <a href="{% url 'reservations:solicitud_crear' %}">
+    Nueva solicitud
+  </a>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Acceso denegado · Gestión de Reservas{% endblock %}
+
+{% block content %}
+<div class="alert alert-warning" role="alert">
+  <h1 class="h4 alert-heading">No tienes permisos para acceder a esta sección</h1>
+  <p class="mb-0">
+    Tu cuenta no tiene el rol necesario para realizar esta operación. Si crees que
+    se trata de un error, contacta con el administrador del sistema.
+  </p>
+</div>
+
+<p class="mb-0">
+  <a href="{% url 'core:home' %}">Volver al inicio</a>
+</p>
+{% endblock %}
