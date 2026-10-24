@@ -39,6 +39,103 @@
   <dd class="col-sm-9">{{ solicitud.creado_en|date:"d/m/Y H:i" }}</dd>
 </dl>
 
+{% if solicitud.estado != "PENDIENTE" %}
+  <section class="card mt-3">
+    <div class="card-header">Decisión</div>
+    <div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Estado</dt>
+        <dd class="col-sm-9">{{ solicitud.get_estado_display }}</dd>
+
+        {% if solicitud.revisado_por %}
+          <dt class="col-sm-3">Revisado por</dt>
+          <dd class="col-sm-9">
+            {{ solicitud.revisado_por.get_full_name|default:solicitud.revisado_por.username }}
+          </dd>
+        {% endif %}
+
+        {% if solicitud.fecha_decision %}
+          <dt class="col-sm-3">Fecha de la decisión</dt>
+          <dd class="col-sm-9">
+            {{ solicitud.fecha_decision|date:"d/m/Y H:i" }}
+          </dd>
+        {% endif %}
+
+        {% if solicitud.motivo_decision %}
+          <dt class="col-sm-3">Motivo de la decisión</dt>
+          <dd class="col-sm-9">{{ solicitud.motivo_decision|linebreaksbr }}</dd>
+        {% endif %}
+      </dl>
+    </div>
+  </section>
+{% endif %}
+
+{% if puede_ver_cancelacion %}
+  <section class="card mt-3">
+    <div class="card-header">Cancelación</div>
+    <div class="card-body">
+      {% if motivo_no_cancelable %}
+        <p class="mb-0">{{ motivo_no_cancelable }}</p>
+      {% else %}
+        <a
+          class="btn btn-outline-danger"
+          href="{% url 'reservations:cancelar' solicitud.pk %}"
+        >
+          Cancelar reserva
+        </a>
+      {% endif %}
+    </div>
+  </section>
+{% endif %}
+
+{% if puede_ver_historial %}
+  <section class="card mt-3">
+    <div class="card-header">Historial de cambios</div>
+    <div class="card-body">
+      {% if historial %}
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-3">
+            <thead>
+              <tr>
+                <th scope="col">Fecha y hora</th>
+                <th scope="col">Transición</th>
+                <th scope="col">Actor</th>
+                <th scope="col">Observación</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for evento in historial %}
+                <tr>
+                  <td>{{ evento.fecha_evento|date:"d/m/Y H:i" }}</td>
+                  <td>
+                    {% if evento.estado_anterior %}
+                      {{ evento.get_estado_anterior_display }} →
+                    {% else %}
+                      Creación →
+                    {% endif %}
+                    {{ evento.get_estado_nuevo_display }}
+                  </td>
+                  <td>
+                    {{ evento.actor.get_full_name|default:evento.actor.username }}
+                  </td>
+                  <td>{{ evento.observacion|linebreaksbr }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted">
+          No hay eventos de historial para esta reserva.
+        </p>
+      {% endif %}
+      <a href="{% url 'reservations:historial' %}">
+        Ver historial completo
+      </a>
+    </div>
+  </section>
+{% endif %}
+
 <p class="mt-4 mb-0">
   <a href="{% url 'reservations:solicitud_lista' %}">
     Volver al listado de solicitudes

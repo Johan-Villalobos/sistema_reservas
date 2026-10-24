@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Cancelar reserva · Gestión de Reservas{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Cancelar reserva</h1>
+
+{% for error in errores %}
+  <div class="alert alert-danger" role="alert">{{ error }}</div>
+{% endfor %}
+
+<div class="card mb-3">
+  <div class="card-header">Resumen de la reserva</div>
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Espacio</dt>
+      <dd class="col-sm-9">{{ reserva.espacio.nombre }}</dd>
+
+      <dt class="col-sm-3">Solicitante</dt>
+      <dd class="col-sm-9">
+        {{ reserva.solicitante.get_full_name|default:reserva.solicitante.username }}
+      </dd>
+
+      <dt class="col-sm-3">Fecha</dt>
+      <dd class="col-sm-9">{{ reserva.fecha|date:"d/m/Y" }}</dd>
+
+      <dt class="col-sm-3">Franja horaria</dt>
+      <dd class="col-sm-9">
+        {{ reserva.hora_inicio|time:"H:i" }} - {{ reserva.hora_fin|time:"H:i" }}
+      </dd>
+
+      <dt class="col-sm-3">Motivo</dt>
+      <dd class="col-sm-9">{{ reserva.motivo }}</dd>
+
+      <dt class="col-sm-3">Estado</dt>
+      <dd class="col-sm-9">{{ reserva.get_estado_display }}</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="alert alert-warning" role="alert">
+  La cancelación es definitiva y no se puede deshacer.
+</div>
+
+{% if puede_confirmar %}
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">
+      Confirmar cancelación
+    </button>
+    <a
+      class="btn btn-secondary"
+      href="{% url 'reservations:solicitud_detalle' reserva.pk %}"
+    >
+      Volver
+    </a>
+  </form>
+{% else %}
+  <p class="text-muted">{{ motivo }}</p>
+  <a
+    class="btn btn-secondary"
+    href="{% url 'reservations:solicitud_detalle' reserva.pk %}"
+  >
+    Volver
+  </a>
+{% endif %}
+{% endblock %}

@@ -1,13 +1,14 @@
-"""Pruebas del formulario de solicitud de reserva.
+"""Pruebas de los formularios de reserva.
 
-Cubre REQ-SOL-003, REQ-SOL-004, REQ-SOL-005, REQ-SOL-006 y REQ-SOL-007.
+Cubre REQ-SOL-003, REQ-SOL-004, REQ-SOL-005, REQ-SOL-006, REQ-SOL-007 y
+REQ-APR-003.
 """
 
 from datetime import date, time, timedelta
 
 from django.test import TestCase
 
-from reservations.forms import SolicitudReservaForm
+from reservations.forms import RechazarReservaForm, SolicitudReservaForm
 from reservations.tests.utils import (
     crear_espacio,
     crear_reserva_aprobada,
@@ -152,3 +153,44 @@ class SolicitudReservaFormTests(TestCase):
         self.assertIn(str(datos["fecha"]), mensaje)
         self.assertIn("10:00", mensaje)
         self.assertIn("12:00", mensaje)
+
+
+class RechazarReservaFormTests(TestCase):
+    """REQ-APR-003: motivo obligatorio, normalizado y sin espacios vacíos."""
+
+    def test_req_apr_003_motivo_valido_se_normaliza(self):
+        formulario = RechazarReservaForm(
+            data={"motivo": "  Mantenimiento programado  "}
+        )
+
+        self.assertTrue(formulario.is_valid())
+        self.assertEqual(
+            formulario.cleaned_data["motivo"],
+            "Mantenimiento programado",
+        )
+
+    def test_req_apr_003_motivo_vacio_es_invalido(self):
+        formulario = RechazarReservaForm(data={"motivo": ""})
+
+        self.assertFalse(formulario.is_valid())
+        self.assertIn("motivo", formulario.errors)
+        self.assertIn(
+            "El motivo del rechazo es obligatorio.",
+            formulario.errors["motivo"][0],
+        )
+
+    def test_req_apr_003_motivo_solo_espacios_es_invalido(self):
+        formulario = RechazarReservaForm(data={"motivo": "  \n\t   "})
+
+        self.assertFalse(formulario.is_valid())
+        self.assertIn("motivo", formulario.errors)
+        self.assertIn(
+            "El motivo del rechazo es obligatorio.",
+            formulario.errors["motivo"][0],
+        )
+
+    def test_req_apr_003_campo_usa_textarea(self):
+        formulario = RechazarReservaForm()
+
+        self.assertIn("textarea", formulario["motivo"].as_widget())
+        self.assertTrue(formulario.fields["motivo"].required)

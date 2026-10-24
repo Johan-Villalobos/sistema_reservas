@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Rechazar solicitud · Gestión de Reservas{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="h3 mb-3">Rechazar solicitud</h1>
+
+    <div class="card mb-4">
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-3">Espacio</dt>
+          <dd class="col-sm-9">{{ solicitud.espacio.nombre }}</dd>
+
+          <dt class="col-sm-3">Solicitante</dt>
+          <dd class="col-sm-9">
+            {{ solicitud.solicitante.get_full_name|default:solicitud.solicitante.username }}
+          </dd>
+
+          <dt class="col-sm-3">Fecha</dt>
+          <dd class="col-sm-9">{{ solicitud.fecha|date:"d/m/Y" }}</dd>
+
+          <dt class="col-sm-3">Franja horaria</dt>
+          <dd class="col-sm-9">
+            {{ solicitud.hora_inicio|time:"H:i" }} -
+            {{ solicitud.hora_fin|time:"H:i" }}
+          </dd>
+
+          <dt class="col-sm-3">Motivo original</dt>
+          <dd class="col-sm-9">{{ solicitud.motivo }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger" role="alert">
+        {% for error in form.non_field_errors %}
+          <p class="mb-0">{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.motivo.id_for_label }}">
+          {{ form.motivo.label }}
+        </label>
+        {{ form.motivo }}
+        {% if form.motivo.errors %}
+          <div class="text-danger small">{{ form.motivo.errors|striptags }}</div>
+        {% endif %}
+      </div>
+      <button type="submit" class="btn btn-danger">Confirmar rechazo</button>
+      <a class="btn btn-outline-secondary" href="{% url 'reservations:pendientes' %}">
+        Cancelar
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}

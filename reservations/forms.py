@@ -106,3 +106,28 @@ class DisponibilidadForm(forms.Form):
             attrs={"class": "form-control", "type": "date"}
         ),
     )
+
+
+class RechazarReservaForm(forms.Form):
+    """Motivo obligatorio para rechazar una solicitud pendiente."""
+
+    motivo = forms.CharField(
+        label="Motivo del rechazo",
+        strip=True,
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": "Explique por qué se rechaza la solicitud",
+            }
+        ),
+        error_messages={
+            "required": "El motivo del rechazo es obligatorio.",
+        },
+    )
+
+    def clean_motivo(self):
+        motivo = (self.cleaned_data.get("motivo") or "").strip()
+        if not motivo:
+            raise ValidationError("El motivo del rechazo es obligatorio.")
+        return motivo

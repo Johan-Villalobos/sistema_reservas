@@ -32,6 +32,12 @@
             <li class="nav-item"><a class="nav-link" href="{% url 'spaces:espacio_lista' %}">Espacios</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'reservations:solicitud_lista' %}">Reservas</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'reservations:disponibilidad' %}">Disponibilidad</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'reservations:historial' %}">Historial</a></li>
+            {% if user.rol == "APROBADOR" or user.rol == "ADMINISTRADOR" %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'reservations:pendientes' %}">Pendientes</a>
+              </li>
+            {% endif %}
             {% if user.es_administrador %}
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'accounts:usuario_lista' %}">Usuarios</a>

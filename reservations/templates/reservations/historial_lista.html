@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de reservas · Gestión de Reservas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="h3 mb-1">Historial de reservas</h1>
+    <p class="text-muted mb-0">
+      {% if user.es_administrador %}
+        Mostrando el historial de todas las reservas.
+      {% else %}
+        Mostrando el historial de sus propias reservas.
+      {% endif %}
+    </p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'reservations:historial' %}">
+    Limpiar filtros
+  </a>
+</div>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-sm-4 col-md-3">
+    <label class="form-label" for="filtro-estado">Estado resultante</label>
+    <select class="form-select" id="filtro-estado" name="estado">
+      <option value="">Todos</option>
+      {% for valor, etiqueta in estados %}
+        <option value="{{ valor }}" {% if filtros.estado == valor %}selected{% endif %}>
+          {{ etiqueta }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-4 col-md-3">
+    <label class="form-label" for="filtro-fecha">Fecha</label>
+    <input
+      class="form-control"
+      type="date"
+      id="filtro-fecha"
+      name="fecha"
+      value="{{ filtros.fecha }}"
+    >
+  </div>
+  <div class="col-sm-4 col-md-3">
+    <label class="form-label" for="filtro-espacio">Espacio</label>
+    <select class="form-select" id="filtro-espacio" name="espacio">
+      <option value="">Todos</option>
+      {% for espacio in espacios %}
+        <option
+          value="{{ espacio.pk }}"
+          {% if filtros.espacio == espacio.pk %}selected{% endif %}
+        >
+          {{ espacio.nombre }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-12 col-md-3 d-flex gap-2">
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+    <a class="btn btn-outline-secondary" href="{% url 'reservations:historial' %}">
+      Limpiar
+    </a>
+  </div>
+</form>
+
+{% if historial %}
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th scope="col">Fecha y hora</th>
+          <th scope="col">Reserva</th>
+          <th scope="col">Transición</th>
+          <th scope="col">Actor</th>
+          <th scope="col">Observación</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for evento in historial %}
+          <tr>
+            <td>{{ evento.fecha_evento|date:"d/m/Y H:i" }}</td>
+            <td>{{ evento.reserva }}</td>
+            <td>
+              {% if evento.estado_anterior %}
+                {{ evento.get_estado_anterior_display }} →
+              {% else %}
+                Creación →
+              {% endif %}
+              {{ evento.get_estado_nuevo_display }}
+            </td>
+            <td>
+              {{ evento.actor.get_full_name|default:evento.actor.username }}
+            </td>
+            <td>{{ evento.observacion|linebreaksbr }}</td>
+            <td>
+              <a href="{% url 'reservations:solicitud_detalle' evento.reserva.pk %}">
+                Ver reserva
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p class="text-muted">No hay eventos de historial para mostrar.</p>
+{% endif %}
+{% endblock %}

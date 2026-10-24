@@ -1,14 +1,16 @@
 """Pruebas del modelo de reservas.
 
-Cubre REQ-SOL-002, REQ-SOL-010 y documenta la limitación de SQLite sobre
-REQ-SOL-011.
+Cubre REQ-SOL-002, REQ-SOL-010, REQ-APR-002 y REQ-APR-003, y documenta la
+limitación de SQLite sobre REQ-SOL-011.
 """
 
-from datetime import time
+from datetime import time, timedelta
 
 from django.db import IntegrityError, transaction
 from django.test import TestCase
+from django.utils import timezone
 
+from accounts.roles import Rol
 from reservations.models import EstadoReserva, Reserva
 from reservations.tests.utils import (
     crear_espacio,
@@ -96,3 +98,51 @@ class ReservaModelTests(TestCase):
         reserva.refresh_from_db()
 
         self.assertEqual(reserva.estado, EstadoReserva.APROBADA)
+
+    def test_req_apr_002_campos_de_decision_iniciales(self):
+        """REQ-APR-002: una reserva sin decidir no tiene datos de decisión."""
+        reserva = self.crear_reserva()
+
+        self.assertIsNone(reserva.revisado_por)
+        self.assertEqual(reserva.motivo_decision, "")
+        self.assertIsNone(reserva.fecha_decision)
+
+    def test_req_apr_002_guardar_decision_registra_revisor_motivo_y_fecha(self):
+        """REQ-APR-002/003: la decisión persiste quién, por qué y cuándo."""
+        revisor = crear_usuario(rol=Rol.APROBADOR)
+        reserva = self.crear_reserva()
+        momento = timezone.now()
+
+        reserva.estado = EstadoReserva.RECHAZADA
+        reserva.revisado_por = revisor
+        reserva.motivo_decision = "El espacio está en mantenimiento."
+        reserva.fecha_decision = momento
+        reserva.save()
+
+        guardada = Reserva.objects.get(pk=reserva.pk)
+        self.assertEqual(guardada.estado, EstadoReserva.RECHAZADA)
+        self.assertEqual(guardada.revisado_por, revisor)
+        self.assertEqual(
+            guardada.motivo_decision,
+            "El espacio está en mantenimiento.",
+        )
+        self.assertEqual(guardada.fecha_decision, momento)
+        self.assertIn(guardada, revisor.reservas_revisadas.all())
+
+    def test_req_apr_002_fecha_decision_independiente_de_actualizado_en(self):
+        """REQ-APR-002: actualizar la reserva no borra la fecha de decisión."""
+        revisor = crear_usuario(rol=Rol.APROBADOR)
+        reserva = self.crear_reserva()
+        decision = timezone.now() - timedelta(days=2)
+        reserva.estado = EstadoReserva.APROBADA
+        reserva.revisado_por = revisor
+        reserva.fecha_decision = decision
+        reserva.save()
+
+        reserva.motivo = "Motivo editado por administración"
+        reserva.save()
+        reserva.refresh_from_db()
+
+        self.assertEqual(reserva.fecha_decision, decision)
+        self.assertGreater(reserva.actualizado_en, reserva.fecha_decision)
+        self.assertGreater(reserva.actualizado_en, reserva.creado_en)

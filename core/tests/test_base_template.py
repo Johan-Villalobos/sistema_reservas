@@ -33,6 +33,8 @@ class BaseTemplateTests(SimpleTestCase):
         self.assertNotIn('href="/espacios/"', html)
         self.assertNotIn('href="/reservas/"', html)
         self.assertNotIn('href="/reservas/disponibilidad/"', html)
+        self.assertNotIn('href="/reservas/pendientes/"', html)
+        self.assertNotIn("Pendientes", html)
         self.assertNotIn('href="/accounts/usuarios/"', html)
         self.assertNotIn("Usuarios", html)
         self.assertNotIn("Cerrar sesión", html)
@@ -49,6 +51,8 @@ class BaseTemplateTests(SimpleTestCase):
         self.assertIn('href="/reservas/"', html)
         self.assertIn('href="/reservas/disponibilidad/"', html)
         self.assertIn("Disponibilidad", html)
+        self.assertNotIn('href="/reservas/pendientes/"', html)
+        self.assertNotIn("Pendientes", html)
         self.assertIn('action="/accounts/logout/"', html)
         self.assertIn('name="csrfmiddlewaretoken"', html)
         self.assertIn("Cerrar sesión", html)
@@ -65,7 +69,21 @@ class BaseTemplateTests(SimpleTestCase):
 
         self.assertIn('href="/accounts/usuarios/"', html)
         self.assertIn("Usuarios", html)
+        self.assertIn('href="/reservas/pendientes/"', html)
+        self.assertIn("Pendientes", html)
         self.assertIn('action="/accounts/logout/"', html)
+
+    def test_aprobador_sees_pending_link_without_user_management(self):
+        user = Usuario(
+            username="aprobador",
+            nombre_completo="Aprobador",
+            rol=Rol.APROBADOR,
+        )
+        html = self.render(user)
+
+        self.assertIn('href="/reservas/pendientes/"', html)
+        self.assertIn("Pendientes", html)
+        self.assertNotIn('href="/accounts/usuarios/"', html)
 
     def test_authenticated_user_does_not_see_anonymous_links(self):
         user = Usuario(
